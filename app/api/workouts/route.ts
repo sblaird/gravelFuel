@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Authorization': `Basic ${credentials}`,
         'Accept': 'application/json',
+        'User-Agent': 'GravelFuel/1.0',
       },
     });
 
