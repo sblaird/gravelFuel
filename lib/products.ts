@@ -1,45 +1,51 @@
 import type { DrinkMixProduct, GelProduct, IntensityTier, HeatTier } from '@/types';
 
 // ── Intensity Tiers ─────────────────────────────────────────────────
+// Updated carb targets based on peer-reviewed sports nutrition science:
+// - Jeukendrup (2014), Burke et al. (2011), Sawka et al. (2007)
+// - Glucose-only absorption ceiling: ~60g/hr
+// - Glucose + fructose (2:1 ratio): up to 90g/hr
+// - Glucose + fructose (1:0.8 ratio, gut-trained): up to 120g/hr
+// - kJ-based formula: (kJ/hr × 0.45) / 4
 export const INTENSITY_TIERS: IntensityTier[] = [
   {
     key: 'easy',
     label: 'Easy / Recovery',
-    description: 'Conversational pace',
+    description: 'Conversational pace, <90 min can be fasted',
     zone: 'Z1',
-    carbRange: [30, 45],
+    carbRange: [0, 40],
     fluidRange: [0.5, 0.6],
   },
   {
     key: 'aerobic',
     label: 'Aerobic / Endurance',
-    description: 'All-day gravel pace',
+    description: 'All-day gravel pace, 400–500 kJ/hr',
     zone: 'Z2',
-    carbRange: [45, 60],
+    carbRange: [50, 60],
     fluidRange: [0.6, 0.75],
   },
   {
     key: 'tempo',
     label: 'Tempo / Hard Endurance',
-    description: 'Sustained effort',
+    description: 'Sustained effort, 60–90g/hr range',
     zone: 'Z3',
-    carbRange: [60, 75],
+    carbRange: [60, 90],
     fluidRange: [0.75, 0.9],
   },
   {
     key: 'threshold',
     label: 'Threshold / Race Pace',
-    description: 'Race effort',
+    description: 'Race effort, 600–800 kJ/hr',
     zone: 'Z4',
-    carbRange: [75, 90],
+    carbRange: [75, 100],
     fluidRange: [0.9, 1.0],
   },
   {
     key: 'high',
     label: 'High Intensity / Attacks',
-    description: 'VO₂ max, surges',
+    description: 'VO₂ max, ~1000 kJ/hr, gut training required >90g',
     zone: 'Z5+',
-    carbRange: [90, 120],
+    carbRange: [100, 120],
     fluidRange: [1.0, 1.2],
   },
 ];

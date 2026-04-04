@@ -12,11 +12,11 @@ import { GEL_PRODUCTS } from '../lib/products';
 
 describe('getIntensityTier', () => {
   it('returns the correct tier for each intensity level', () => {
-    expect(getIntensityTier('easy').carbRange).toEqual([30, 45]);
-    expect(getIntensityTier('aerobic').carbRange).toEqual([45, 60]);
-    expect(getIntensityTier('tempo').carbRange).toEqual([60, 75]);
-    expect(getIntensityTier('threshold').carbRange).toEqual([75, 90]);
-    expect(getIntensityTier('high').carbRange).toEqual([90, 120]);
+    expect(getIntensityTier('easy').carbRange).toEqual([0, 40]);
+    expect(getIntensityTier('aerobic').carbRange).toEqual([50, 60]);
+    expect(getIntensityTier('tempo').carbRange).toEqual([60, 90]);
+    expect(getIntensityTier('threshold').carbRange).toEqual([75, 100]);
+    expect(getIntensityTier('high').carbRange).toEqual([100, 120]);
   });
 });
 
@@ -24,9 +24,9 @@ describe('calculateCarbTargets', () => {
   it('calculates midpoint carb target for a 4-hour tempo ride', () => {
     const result = calculateCarbTargets('tempo', 240);
     expect(result.carbRangeLow).toBe(60);
-    expect(result.carbRangeHigh).toBe(75);
-    expect(result.carbTargetGhr).toBe(67.5); // midpoint
-    expect(result.totalCarbsTarget).toBe(270); // 67.5 * 4
+    expect(result.carbRangeHigh).toBe(90);
+    expect(result.carbTargetGhr).toBe(75); // midpoint of 60-90
+    expect(result.totalCarbsTarget).toBe(300); // 75 * 4
   });
 
   it('uses custom carb target when provided', () => {
@@ -37,12 +37,12 @@ describe('calculateCarbTargets', () => {
 
   it('clamps custom target to range bounds', () => {
     const result = calculateCarbTargets('tempo', 240, 200);
-    expect(result.carbTargetGhr).toBe(75);
+    expect(result.carbTargetGhr).toBe(90);
   });
 
   it('handles short ride (30 min)', () => {
     const result = calculateCarbTargets('easy', 30);
-    expect(result.totalCarbsTarget).toBe(18.75); // 37.5 * 0.5
+    expect(result.totalCarbsTarget).toBe(10); // midpoint 20 * 0.5
   });
 });
 
@@ -201,7 +201,7 @@ describe('buildFuelingPlan', () => {
       heatTier: 'hot_humid',
     });
 
-    expect(plan.carbTargets.carbTargetGhr).toBe(105); // midpoint of 90-120
+    expect(plan.carbTargets.carbTargetGhr).toBe(110); // midpoint of 100-120
     expect(plan.hydrationTargets.weatherMultiplier).toBe(1.4);
     expect(plan.drinkMix.concentrationExceeded).toBe(false); // high fluid = more room
     expect(plan.totalCarbsRide).toBeGreaterThan(0);

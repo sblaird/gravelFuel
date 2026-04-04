@@ -1,6 +1,7 @@
 'use client';
 
 import { useApp } from '@/lib/context';
+import WorkoutPicker from './WorkoutPicker';
 import DurationPicker from './DurationPicker';
 import IntensitySelector from './IntensitySelector';
 
@@ -23,6 +24,15 @@ export default function StepOne() {
         </h2>
         <p className="text-sm text-[#444444] mt-1">
           How long and how hard will you ride?
+        </p>
+      </div>
+
+      <WorkoutPicker />
+
+      <div className="relative">
+        <div className="absolute inset-x-0 top-1/2 h-px bg-gray-200" />
+        <p className="relative mx-auto w-fit bg-[#F5F0EB] px-3 text-xs text-[#444444]">
+          or enter manually
         </p>
       </div>
 

@@ -93,6 +93,33 @@ export interface GelRecipe {
   schedule: string;
 }
 
+// ── Intervals.icu Types ─────────────────────────────────────────────
+export interface IntervalsEvent {
+  id: number;
+  name: string;
+  description?: string;
+  start_date_local?: string;
+  type?: string;
+  category?: string;
+  moving_time?: number; // seconds
+  icu_training_load?: number;
+  icu_intensity?: number; // Intensity Factor (IF)
+  indoor?: boolean;
+  color?: string;
+  // Planned workout fields
+  duration?: number; // planned duration in seconds
+  joules?: number;
+  load_target?: number;
+}
+
+export interface PlannedWorkout {
+  id: number;
+  name: string;
+  durationMinutes: number;
+  intensity: IntensityLevel;
+  raw: IntervalsEvent;
+}
+
 export interface FuelingPlan {
   inputs: RideInputs;
   carbTargets: CarbTargets;
