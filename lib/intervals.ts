@@ -86,13 +86,29 @@ export function parseWorkouts(events: IntervalsEvent[]): PlannedWorkout[] {
 const INTERVALS_API = 'https://intervals.icu/api/v1';
 
 /**
- * Fetch today's planned workouts directly from Intervals.icu.
- * Uses client-side fetch since Intervals.icu supports CORS and
- * blocks requests from cloud provider IPs (Vercel/AWS).
+ * Fetch today's planned workouts.
+ *
+ * Strategy:
+ * 1. Try server-side proxy (/api/workouts) — works if Intervals.icu allows the server IP
+ * 2. Fall back to direct client-side fetch via CORS — works from browser
  */
 export async function fetchTodaysWorkouts(
   date?: string
 ): Promise<PlannedWorkout[]> {
+  const param = date || new Date().toISOString().slice(0, 10);
+
+  // Attempt 1: server-side proxy
+  try {
+    const proxyRes = await fetch(`/api/workouts?date=${param}`);
+    if (proxyRes.ok) {
+      const events: IntervalsEvent[] = await proxyRes.json();
+      return parseWorkouts(events);
+    }
+  } catch {
+    // Server proxy failed, try direct
+  }
+
+  // Attempt 2: direct client-side fetch (CORS supported by Intervals.icu)
   const athleteId = process.env.NEXT_PUBLIC_INTERVALS_ATHLETE_ID;
   const apiKey = process.env.NEXT_PUBLIC_INTERVALS_API_KEY;
 
@@ -100,7 +116,6 @@ export async function fetchTodaysWorkouts(
     throw new Error('Intervals.icu credentials not configured');
   }
 
-  const param = date || new Date().toISOString().slice(0, 10);
   const credentials = btoa(`API_KEY:${apiKey}`);
   const url = `${INTERVALS_API}/athlete/${athleteId}/events?oldest=${param}&newest=${param}`;
 

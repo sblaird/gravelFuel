@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useApp } from '@/lib/context';
-import { fetchWeather, getUserLocation, getWeatherDescription } from '@/lib/weather';
-import { calculateHeatTier } from '@/lib/calculations';
+import { fetchWeatherWithFallback, fetchWeather } from '@/lib/weather';
+import { calculateHeatTier, celsiusToFahrenheit } from '@/lib/calculations';
 import { HEAT_MULTIPLIERS, HEAT_TIER_LABELS } from '@/lib/products';
-import { celsiusToFahrenheit } from '@/lib/calculations';
 import type { HeatTier } from '@/types';
 
 export default function WeatherDisplay() {
@@ -25,20 +24,20 @@ export default function WeatherDisplay() {
   const [showManual, setShowManual] = useState(false);
   const [manualTemp, setManualTemp] = useState('25');
   const [manualHumidity, setManualHumidity] = useState('50');
+  const [zipCode, setZipCode] = useState('');
+  const [locationName, setLocationName] = useState<string | null>(null);
 
+  // Auto-fetch weather on mount with geolocation → default fallback
   useEffect(() => {
-    if (weatherData || manualWeather || weatherError) return;
+    if (weatherData || manualWeather) return;
 
     let cancelled = false;
     setWeatherLoading(true);
+    setWeatherError(null);
 
     (async () => {
       try {
-        const pos = await getUserLocation();
-        const data = await fetchWeather(
-          pos.coords.latitude,
-          pos.coords.longitude
-        );
+        const data = await fetchWeatherWithFallback();
         if (!cancelled) {
           setWeatherData(data);
           setWeatherLoading(false);
@@ -46,7 +45,7 @@ export default function WeatherDisplay() {
         }
       } catch {
         if (!cancelled) {
-          setWeatherError('Location unavailable — using intensity-only hydration targets.');
+          setWeatherError('Weather unavailable — using intensity-only hydration targets.');
           setWeatherLoading(false);
         }
       }
@@ -57,10 +56,45 @@ export default function WeatherDisplay() {
     };
   }, []);
 
+  const handleZipSubmit = async () => {
+    if (!zipCode.trim()) return;
+    setWeatherLoading(true);
+    setWeatherError(null);
+
+    try {
+      const res = await fetch(`/api/weather?zip=${encodeURIComponent(zipCode.trim())}`);
+      if (!res.ok) throw new Error('Zip lookup failed');
+      const data = await res.json();
+
+      const heatTier: HeatTier = calculateHeatTier(data.temperatureC, data.humidity);
+      const weatherResult = {
+        temperatureC: data.temperatureC,
+        humidity: data.humidity,
+        heatTier,
+        multiplier: HEAT_MULTIPLIERS[heatTier],
+        description: HEAT_TIER_LABELS[heatTier],
+      };
+      setWeatherData(weatherResult);
+      setLocationName(data.name || zipCode);
+      setManualWeather(null);
+      setWeatherLoading(false);
+      setShowManual(false);
+      recalculate();
+    } catch {
+      setWeatherError('Could not look up that zip code.');
+      setWeatherLoading(false);
+    }
+  };
+
   const handleManualSubmit = () => {
-    const tempC = parseFloat(manualTemp);
+    let tempC = parseFloat(manualTemp);
     const hum = parseFloat(manualHumidity);
     if (isNaN(tempC) || isNaN(hum)) return;
+
+    // Convert from °F if imperial
+    if (unitSystem === 'imperial') {
+      tempC = (tempC - 32) * 5 / 9;
+    }
 
     const heatTier: HeatTier = calculateHeatTier(tempC, hum);
     setManualWeather({ temperatureC: tempC, humidity: hum });
@@ -72,6 +106,7 @@ export default function WeatherDisplay() {
       description: HEAT_TIER_LABELS[heatTier],
     });
     setWeatherError(null);
+    setLocationName(null);
     setShowManual(false);
     recalculate();
   };
@@ -93,7 +128,7 @@ export default function WeatherDisplay() {
           onClick={() => setShowManual(!showManual)}
           className="text-xs text-[#E8601C] font-medium hover:underline"
         >
-          {showManual ? 'Cancel' : 'Enter manually'}
+          {showManual ? 'Cancel' : 'Change location'}
         </button>
       </div>
 
@@ -104,17 +139,20 @@ export default function WeatherDisplay() {
         </div>
       )}
 
-      {weatherError && !manualWeather && !showManual && (
+      {weatherError && !showManual && (
         <p className="text-sm text-[#444444] bg-gray-50 rounded-lg p-3">
           {weatherError}
         </p>
       )}
 
-      {activeData && !showManual && (
+      {activeData && !showManual && !weatherLoading && (
         <div className="space-y-1">
           <p className="text-sm text-[#1A1A1A]">
             <span className="font-medium">{tempDisplay}</span>,{' '}
             {Math.round(activeData.humidity)}% humidity
+            {locationName && (
+              <span className="text-[#444444]"> — {locationName}</span>
+            )}
           </p>
           <p
             className={`text-sm font-semibold ${
@@ -130,15 +168,46 @@ export default function WeatherDisplay() {
               className="mt-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700"
               role="alert"
             >
-              <strong>Safety Advisory:</strong> Extreme heat detected. Consider reducing ride
-              intensity and duration. Increase fluid intake and plan for shade stops.
+              <strong>Safety Advisory:</strong> Extreme heat detected. Consider
+              reducing ride intensity and duration.
             </div>
           )}
         </div>
       )}
 
       {showManual && (
-        <div className="space-y-3">
+        <div className="space-y-4">
+          {/* Zip Code Lookup */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-[#444444]">
+              Zip Code
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleZipSubmit()}
+                placeholder="e.g. 05651"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+              <button
+                onClick={handleZipSubmit}
+                className="rounded-lg bg-[#E8601C] px-4 py-2 text-sm font-bold text-white"
+              >
+                Lookup
+              </button>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-x-0 top-1/2 h-px bg-gray-200" />
+            <p className="relative mx-auto w-fit bg-white px-3 text-xs text-[#444444]">
+              or enter manually
+            </p>
+          </div>
+
+          {/* Manual temp/humidity */}
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="text-xs text-[#444444]">
