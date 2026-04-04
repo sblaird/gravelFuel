@@ -24,7 +24,9 @@ export default function ExportPlan() {
     text += `${'-'.repeat(35)}\n`;
     text += `  Water: ${dm.waterMlPerBottle} mL\n`;
     text += `  Gatorade: ${dm.gatoradeScoopsPerBottle} scoop(s)\n`;
-    text += `  Sugar: ${dm.sugarGramsPerBottle}g (${dm.sugarTspPerBottle} tsp)\n`;
+    const sugarCups = dm.sugarGramsPerBottle / 200;
+    text += `  Sugar: ${dm.sugarGramsPerBottle}g (~${(Math.round(sugarCups * 8) / 8).toFixed(3).replace(/0+$/, '').replace(/\.$/, '')} cup)\n`;
+    text += `  Salt: 1/4 tsp (~575mg sodium)\n`;
     text += `  → ${dm.bottlesPerHour} bottles/hr, ${dm.totalBottles} total\n\n`;
 
     if (gel && gel.gelsPerHour > 0) {
