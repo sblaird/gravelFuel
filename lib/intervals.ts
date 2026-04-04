@@ -83,17 +83,36 @@ export function parseWorkouts(events: IntervalsEvent[]): PlannedWorkout[] {
     });
 }
 
+const INTERVALS_API = 'https://intervals.icu/api/v1';
+
 /**
- * Fetch today's planned workouts from the API route.
+ * Fetch today's planned workouts directly from Intervals.icu.
+ * Uses client-side fetch since Intervals.icu supports CORS and
+ * blocks requests from cloud provider IPs (Vercel/AWS).
  */
 export async function fetchTodaysWorkouts(
   date?: string
 ): Promise<PlannedWorkout[]> {
+  const athleteId = process.env.NEXT_PUBLIC_INTERVALS_ATHLETE_ID;
+  const apiKey = process.env.NEXT_PUBLIC_INTERVALS_API_KEY;
+
+  if (!athleteId || !apiKey) {
+    throw new Error('Intervals.icu credentials not configured');
+  }
+
   const param = date || new Date().toISOString().slice(0, 10);
-  const res = await fetch(`/api/workouts?date=${param}`);
+  const credentials = btoa(`API_KEY:${apiKey}`);
+  const url = `${INTERVALS_API}/athlete/${athleteId}/events?oldest=${param}&newest=${param}`;
+
+  const res = await fetch(url, {
+    headers: {
+      'Authorization': `Basic ${credentials}`,
+      'Accept': 'application/json',
+    },
+  });
 
   if (!res.ok) {
-    throw new Error('Failed to fetch workouts');
+    throw new Error(`Intervals.icu returned ${res.status}`);
   }
 
   const events: IntervalsEvent[] = await res.json();
