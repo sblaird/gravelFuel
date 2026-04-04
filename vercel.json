@@ -1,7 +1,4 @@
 {
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "functions": {
-    "app/api/weather/route.ts": { "runtime": "edge" }
-  }
+  "regions": ["iad1"]
 }
