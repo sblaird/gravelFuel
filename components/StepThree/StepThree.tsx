@@ -1,15 +1,20 @@
 'use client';
 
 import { useApp } from '@/lib/context';
-import BottleConfig from './BottleConfig';
+import type { GatoradeVariant } from '@/types';
 import GelSelector from './GelSelector';
 import RecipeCard from './RecipeCard';
 import GelSchedule from './GelSchedule';
 import RideSummary from './RideSummary';
 import ExportPlan from './ExportPlan';
 
+const variants: { key: GatoradeVariant; label: string }[] = [
+  { key: 'thirst_quencher', label: 'Gatorade Thirst Quencher' },
+  { key: 'endurance', label: 'Gatorade Endurance' },
+];
+
 export default function StepThree() {
-  const { plan, goToStep } = useApp();
+  const { gatoradeVariant, setGatoradeVariant, recalculate, goToStep } = useApp();
 
   return (
     <div className="space-y-6 pb-24 sm:pb-0">
@@ -18,11 +23,35 @@ export default function StepThree() {
           Step 3: Your Fueling Recipe
         </h2>
         <p className="text-sm text-[#444444] mt-1">
-          Exactly what to mix, eat, and carry.
+          Total amounts for your ride — divide into bottles as you like.
         </p>
       </div>
 
-      <BottleConfig />
+      {/* Gatorade Variant */}
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-[#1A1A1A]">
+          Gatorade Powder
+        </label>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {variants.map((v) => (
+            <button
+              key={v.key}
+              onClick={() => {
+                setGatoradeVariant(v.key);
+                recalculate();
+              }}
+              className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-bold transition-colors ${
+                gatoradeVariant === v.key
+                  ? 'border-[#E8601C] bg-[#E8601C]/5 text-[#E8601C]'
+                  : 'border-gray-200 text-[#444444]'
+              }`}
+            >
+              {v.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <RecipeCard />
       <GelSelector />
       <GelSchedule />

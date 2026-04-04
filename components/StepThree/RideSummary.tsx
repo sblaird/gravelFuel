@@ -16,19 +16,9 @@ export default function RideSummary() {
       <div className="grid grid-cols-3 gap-4">
         <div>
           <p className="text-2xl font-bold text-[#E8601C]">
-            {plan.drinkMix.totalBottles}
+            {Math.round(plan.totalCarbsGhr)}
           </p>
-          <p className="text-xs text-gray-400">
-            {plan.drinkMix.totalBottles === 1 ? 'Bottle' : 'Bottles'}
-          </p>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-[#E8601C]">
-            {plan.gelRecipe?.totalGels ?? 0}
-          </p>
-          <p className="text-xs text-gray-400">
-            {(plan.gelRecipe?.totalGels ?? 0) === 1 ? 'Gel' : 'Gels'}
-          </p>
+          <p className="text-xs text-gray-400">g carbs/hr</p>
         </div>
         <div>
           <p className="text-2xl font-bold text-[#E8601C]">
@@ -36,11 +26,24 @@ export default function RideSummary() {
           </p>
           <p className="text-xs text-gray-400">Total Carbs</p>
         </div>
+        <div>
+          <p className="text-2xl font-bold text-[#E8601C]">
+            {plan.hydrationTargets.totalFluidL.toFixed(1)}L
+          </p>
+          <p className="text-xs text-gray-400">Total Fluid</p>
+        </div>
       </div>
 
+      {plan.gelRecipe && plan.gelRecipe.gelsPerHour > 0 && (
+        <div className="text-xs text-gray-400 pt-2 border-t border-gray-700">
+          {plan.drinkMix.carbsFromDrinkGhr}g/hr from drink mix +{' '}
+          {plan.gelRecipe.carbsFromGelsGhr}g/hr from gels
+        </div>
+      )}
+
       <div className="text-xs text-gray-400 pt-2 border-t border-gray-700">
-        {hours.toFixed(1)} hours &middot; {Math.round(plan.totalCarbsGhr)}g
-        carbs/hr &middot; {plan.drinkMix.bottlesPerHour} bottles/hr
+        {hours.toFixed(1)} hours &middot;{' '}
+        {plan.hydrationTargets.fluidTargetLhr.toFixed(2)} L/hr
       </div>
     </div>
   );

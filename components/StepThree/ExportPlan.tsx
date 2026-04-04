@@ -1,7 +1,7 @@
 'use client';
 
 import { useApp } from '@/lib/context';
-import { INTENSITY_TIERS } from '@/lib/products';
+import { INTENSITY_TIERS, DRINK_MIX_PRODUCTS } from '@/lib/products';
 
 export default function ExportPlan() {
   const { plan } = useApp();
@@ -13,46 +13,52 @@ export default function ExportPlan() {
     const tier = INTENSITY_TIERS.find((t) => t.key === plan.inputs.intensity);
     const dm = plan.drinkMix;
     const gel = plan.gelRecipe;
+    const hyd = plan.hydrationTargets;
+
+    const gatorade = dm.gatoradeVariant === 'endurance'
+      ? DRINK_MIX_PRODUCTS.gatorade_endurance
+      : DRINK_MIX_PRODUCTS.gatorade_tq;
+
+    const totalDrinkCarbs = Math.round(dm.carbsFromDrinkGhr * hours);
+    const totalScoops = Math.round(dm.gatoradeScoopsPerBottle * dm.bottlesPerHour * hours * 2) / 2;
+    const totalScoopCarbs = Math.round(totalScoops * gatorade.carbsPerServing);
+    const totalSugarG = totalDrinkCarbs - totalScoopCarbs;
+    const totalSugarCups = (totalSugarG / 200).toFixed(2);
 
     let text = `GravelFuel — Ride Fueling Plan\n`;
-    text += `${'='.repeat(35)}\n\n`;
+    text += `${'='.repeat(40)}\n\n`;
     text += `Ride: ${hours.toFixed(1)} hours @ ${tier?.label}\n`;
     text += `Carb Target: ${Math.round(plan.carbTargets.carbTargetGhr)}g/hr (${Math.round(plan.totalCarbsRide)}g total)\n`;
-    text += `Hydration: ${plan.hydrationTargets.fluidTargetLhr.toFixed(2)} L/hr\n\n`;
+    text += `Hydration: ${hyd.fluidTargetLhr.toFixed(2)} L/hr (${hyd.totalFluidL.toFixed(1)} L total)\n\n`;
 
-    text += `DRINK MIX (per ${dm.bottleSizeMl} mL bottle)\n`;
-    text += `${'-'.repeat(35)}\n`;
-    text += `  Water: ${dm.waterMlPerBottle} mL\n`;
-    text += `  Gatorade: ${dm.gatoradeScoopsPerBottle} scoop(s)\n`;
-    const sugarCups = dm.sugarGramsPerBottle / 200;
-    text += `  Sugar: ${dm.sugarGramsPerBottle}g (~${(Math.round(sugarCups * 8) / 8).toFixed(3).replace(/0+$/, '').replace(/\.$/, '')} cup)\n`;
-    text += `  Salt: 1/4 tsp (~575mg sodium)\n`;
-    text += `  → ${dm.bottlesPerHour} bottles/hr, ${dm.totalBottles} total\n\n`;
+    text += `DRINK MIX (total for ride)\n`;
+    text += `${'-'.repeat(40)}\n`;
+    text += `  Water: ${hyd.totalFluidL.toFixed(1)} L\n`;
+    text += `  ${gatorade.name}: ${totalScoops} scoops (${totalScoopCarbs}g carbs)\n`;
+    text += `  Sugar: ~${totalSugarCups} cups (${totalSugarG}g carbs)\n`;
+    text += `  Salt: to taste\n`;
+    text += `  → Divide into your bottles as needed\n\n`;
 
     if (gel && gel.gelsPerHour > 0) {
       text += `GEL SCHEDULE\n`;
-      text += `${'-'.repeat(35)}\n`;
+      text += `${'-'.repeat(40)}\n`;
       text += `  ${gel.gel.name}\n`;
       text += `  ${gel.schedule}\n`;
       text += `  → ${gel.totalGels} gels for the ride\n\n`;
     }
 
     text += `TOTALS\n`;
-    text += `${'-'.repeat(35)}\n`;
-    text += `  Bottles: ${dm.totalBottles}\n`;
-    text += `  Gels: ${gel?.totalGels ?? 0}\n`;
-    text += `  Carbs: ${Math.round(plan.totalCarbsRide)}g\n`;
+    text += `${'-'.repeat(40)}\n`;
+    text += `  Carbs from drink: ${totalDrinkCarbs}g\n`;
+    text += `  Carbs from gels: ${gel && gel.gelsPerHour > 0 ? Math.round(gel.carbsFromGelsGhr * hours) : 0}g\n`;
+    text += `  Total carbs: ${Math.round(plan.totalCarbsRide)}g\n`;
+    text += `  Total fluid: ${hyd.totalFluidL.toFixed(1)} L\n`;
 
     return text;
   };
 
   const handleCopy = async () => {
-    const text = generateText();
-    await navigator.clipboard.writeText(text);
-  };
-
-  const handlePrint = () => {
-    window.print();
+    await navigator.clipboard.writeText(generateText());
   };
 
   return (
@@ -64,7 +70,7 @@ export default function ExportPlan() {
         Copy as Text
       </button>
       <button
-        onClick={handlePrint}
+        onClick={() => window.print()}
         className="flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-bold text-[#444444] transition-colors hover:bg-gray-50"
       >
         Print / PDF
