@@ -73,7 +73,7 @@ const INITIAL_STATE: AppState = {
   bottleSize: 750,
   gatoradeVariant: 'thirst_quencher',
   selectedGel: null,
-  unitSystem: 'metric',
+  unitSystem: 'imperial',
   currentStep: 1,
   plan: null,
 };
@@ -86,7 +86,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : null;
     return {
       ...INITIAL_STATE,
-      unitSystem: saved === 'imperial' ? 'imperial' : 'metric',
+      unitSystem: saved === 'metric' ? 'metric' : 'imperial',
     };
   });
 
