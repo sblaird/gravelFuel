@@ -72,7 +72,12 @@ export const HEAT_TIER_LABELS: Record<HeatTier, string> = {
 };
 
 // ── Concentration Cap ───────────────────────────────────────────────
-export const MAX_CARB_CONCENTRATION = 0.08; // 8%
+// Concentration cap — raised to 18% to support high-carb fueling protocols
+// used by gut-trained athletes (up to 120g/hr in-bottle). The standard 8%
+// guideline (Jeukendrup & Moseley 2010) applies to untrained guts; modern
+// ultra/pro cycling nutrition routinely uses 14–18% concentrations with
+// glucose:fructose blends once gut tolerance is established.
+export const MAX_CARB_CONCENTRATION = 0.18; // 18%
 
 // ── Drink Mix Products ──────────────────────────────────────────────
 export const DRINK_MIX_PRODUCTS: Record<string, DrinkMixProduct> = {

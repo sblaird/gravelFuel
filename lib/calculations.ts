@@ -99,7 +99,7 @@ export function calculateDrinkMix(
   const bottleVolumeMl = bottleSize;
   const bottlesPerHour = fluidTargetLhr / (bottleVolumeMl / 1000);
 
-  // Max carbs per bottle at 8% concentration
+  // Max carbs per bottle at the configured concentration ceiling
   const maxCarbsPerBottle = bottleVolumeMl * MAX_CARB_CONCENTRATION;
   const maxCarbsGhr = maxCarbsPerBottle * bottlesPerHour;
   const concentrationExceeded = carbTargetGhr > maxCarbsGhr;

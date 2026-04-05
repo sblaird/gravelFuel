@@ -106,10 +106,17 @@ describe('calculateDrinkMix', () => {
     expect(result.gatoradeScoopsPerBottle).toBeGreaterThanOrEqual(0);
   });
 
-  it('enforces 8% concentration cap', () => {
-    const result = calculateDrinkMix(120, 0.5, 500, 'thirst_quencher');
-    expect(result.concentrationPercent).toBeLessThanOrEqual(8);
+  it('enforces 18% concentration cap', () => {
+    // 150 g/hr carb target with only 0.4 L/hr fluid forces the cap
+    const result = calculateDrinkMix(150, 0.4, 500, 'thirst_quencher');
+    expect(result.concentrationPercent).toBeLessThanOrEqual(18);
     expect(result.concentrationExceeded).toBe(true);
+  });
+
+  it('does NOT exceed cap at 120 g/hr with typical fluid rate', () => {
+    // Gut-trained athlete target: 120 g/hr at ~0.9 L/hr should fit in-bottle
+    const result = calculateDrinkMix(120, 0.9, 750, 'thirst_quencher');
+    expect(result.concentrationExceeded).toBe(false);
   });
 
   it('does not exceed concentration with low carb target', () => {

@@ -281,7 +281,7 @@ export default function RecipeCard() {
       {drinkMix.concentrationExceeded && (
         <div className="border-t border-orange-200 bg-orange-50 px-4 py-3">
           <p className="text-xs text-orange-700">
-            <strong>Note:</strong> At 8% max concentration, drink mix alone
+            <strong>Note:</strong> At 18% max concentration, drink mix alone
             can&apos;t hit your carb target. The remainder comes from gels below.
           </p>
         </div>
