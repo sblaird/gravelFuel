@@ -11,9 +11,9 @@ export default function UnitToggle() {
         setUnitSystem(unitSystem === 'metric' ? 'imperial' : 'metric')
       }
       className="rounded-full border border-[#444444] px-3 py-1 text-xs font-medium text-[#444444] transition-colors hover:bg-[#444444] hover:text-white"
-      aria-label={`Switch to ${unitSystem === 'metric' ? 'US customary' : 'metric'} units`}
+      aria-label={`Switch to ${unitSystem === 'metric' ? 'Fahrenheit' : 'Celsius'}`}
     >
-      {unitSystem === 'metric' ? '°C / mL' : '°F / fl oz'}
+      {unitSystem === 'metric' ? '°C' : '°F'}
     </button>
   );
 }

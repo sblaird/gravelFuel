@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useApp } from '@/lib/context';
-import { mlToFlOz, litersToFlOz } from '@/lib/calculations';
 import { DRINK_MIX_PRODUCTS } from '@/lib/products';
 
 const SUGAR_GRAMS_PER_CUP = 200;
@@ -40,7 +39,7 @@ function formatNum(n: number): string {
 }
 
 export default function RecipeCard() {
-  const { plan, unitSystem } = useApp();
+  const { plan } = useApp();
 
   // Gatorade ratio override: fraction of total drink carbs from Gatorade (0–1)
   const [gatoradeRatio, setGatoradeRatio] = useState<number | null>(null);
@@ -118,14 +117,10 @@ export default function RecipeCard() {
     setSaltTspPerHour((prev) => Math.round(Math.max(0, prev + deltaTsp) * 8) / 8);
   };
 
-  const waterDisplay = unitSystem === 'imperial'
-    ? litersToFlOz(totalWaterL)
-    : totalWaterL >= 1
-      ? `${totalWaterL.toFixed(1)}`
-      : `${totalWaterMl}`;
-  const waterUnit = unitSystem === 'imperial'
-    ? 'fl oz'
-    : totalWaterL >= 1 ? 'L' : 'mL';
+  const waterDisplay = totalWaterL >= 1
+    ? `${totalWaterL.toFixed(1)}`
+    : `${totalWaterMl}`;
+  const waterUnit = totalWaterL >= 1 ? 'L' : 'mL';
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">

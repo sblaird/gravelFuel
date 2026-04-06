@@ -1,10 +1,9 @@
 'use client';
 
 import { useApp } from '@/lib/context';
-import { litersToFlOz } from '@/lib/calculations';
 
 export default function TargetDisplay() {
-  const { plan, unitSystem } = useApp();
+  const { plan } = useApp();
 
   if (!plan) return null;
 
@@ -12,9 +11,6 @@ export default function TargetDisplay() {
   const hours = plan.inputs.durationMinutes / 60;
 
   const formatFluid = (liters: number) => {
-    if (unitSystem === 'imperial') {
-      return `${litersToFlOz(liters)} fl oz`;
-    }
     return liters >= 1
       ? `${(Math.round(liters * 10) / 10).toFixed(1)} L`
       : `${Math.round(liters * 1000)} mL`;
