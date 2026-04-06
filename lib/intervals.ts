@@ -3,6 +3,9 @@ import type { IntensityLevel, IntervalsEvent, PlannedWorkout } from '@/types';
 /**
  * Map Intervals.icu Intensity Factor (IF) to GravelFuel intensity level.
  *
+ * Intervals.icu reports icu_intensity as a percentage (e.g., 64.42 = 64.42% FTP).
+ * We normalize to the 0–1 IF scale before classifying.
+ *
  * IF ranges (based on FTP):
  *   < 0.65  → Easy / Recovery (Z1)
  *   0.65–0.75 → Aerobic / Endurance (Z2)
@@ -12,7 +15,10 @@ import type { IntensityLevel, IntervalsEvent, PlannedWorkout } from '@/types';
  *
  * Falls back to name-based heuristics when IF is unavailable.
  */
-export function mapIntensityFactor(ifValue: number): IntensityLevel {
+export function mapIntensityFactor(rawValue: number): IntensityLevel {
+  // Intervals.icu sends icu_intensity as percentage (0–100+), normalize to 0–1
+  const ifValue = rawValue > 1.5 ? rawValue / 100 : rawValue;
+
   if (ifValue < 0.65) return 'easy';
   if (ifValue < 0.75) return 'aerobic';
   if (ifValue < 0.85) return 'tempo';

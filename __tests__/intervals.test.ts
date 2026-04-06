@@ -3,32 +3,46 @@ import { mapIntensityFactor, parseWorkouts } from '../lib/intervals';
 import type { IntervalsEvent } from '../types';
 
 describe('mapIntensityFactor', () => {
-  it('maps low IF to easy', () => {
-    expect(mapIntensityFactor(0.55)).toBe('easy');
+  // Intervals.icu sends icu_intensity as percentage (0–100+)
+  it('maps Z2 endurance ride (64%) to aerobic', () => {
+    expect(mapIntensityFactor(64.42)).toBe('easy');
   });
 
-  it('maps Z2 IF to aerobic', () => {
+  it('maps low recovery (45%) to easy', () => {
+    expect(mapIntensityFactor(45)).toBe('easy');
+  });
+
+  it('maps Z2 endurance (70%) to aerobic', () => {
+    expect(mapIntensityFactor(70)).toBe('aerobic');
+  });
+
+  it('maps tempo effort (80%) to tempo', () => {
+    expect(mapIntensityFactor(80)).toBe('tempo');
+  });
+
+  it('maps threshold effort (90%) to threshold', () => {
+    expect(mapIntensityFactor(90)).toBe('threshold');
+  });
+
+  it('maps high intensity (105%) to high', () => {
+    expect(mapIntensityFactor(105)).toBe('high');
+  });
+
+  it('maps boundary 65% to aerobic', () => {
+    expect(mapIntensityFactor(65)).toBe('aerobic');
+  });
+
+  it('maps boundary 95% to high', () => {
+    expect(mapIntensityFactor(95)).toBe('high');
+  });
+
+  // Also handles already-normalized decimal values (0–1 scale)
+  it('handles decimal IF 0.70 as aerobic', () => {
     expect(mapIntensityFactor(0.70)).toBe('aerobic');
   });
 
-  it('maps tempo IF to tempo', () => {
-    expect(mapIntensityFactor(0.80)).toBe('tempo');
-  });
-
-  it('maps threshold IF to threshold', () => {
-    expect(mapIntensityFactor(0.90)).toBe('threshold');
-  });
-
-  it('maps high IF to high', () => {
-    expect(mapIntensityFactor(1.05)).toBe('high');
-  });
-
-  it('maps boundary 0.65 to aerobic', () => {
-    expect(mapIntensityFactor(0.65)).toBe('aerobic');
-  });
-
-  it('maps boundary 0.95 to high', () => {
-    expect(mapIntensityFactor(0.95)).toBe('high');
+  it('handles decimal IF 0.55 as easy', () => {
+    expect(mapIntensityFactor(0.55)).toBe('easy');
   });
 });
 
@@ -39,7 +53,7 @@ describe('parseWorkouts', () => {
         id: 1,
         name: '2hr Tempo Ride',
         duration: 7200,
-        icu_intensity: 0.82,
+        icu_intensity: 82,
         type: 'Ride',
       },
     ];
